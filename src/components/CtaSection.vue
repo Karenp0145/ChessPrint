@@ -7,8 +7,10 @@ const { target, isVisible } = useVisibility()
 const { show } = useToast()
 
 const email = ref('')
+const isSubmitting = ref(false)
+const WEBHOOK_URL = 'https://hook.eu1.make.com/0hj8f8em4i9qd7scyqktw5jwc0hljyat'
 
-function submit() {
+async function submit() {
   if (!email.value.trim()) {
     show('Veuillez entrer votre adresse email.')
     return
@@ -17,8 +19,33 @@ function submit() {
     show('Veuillez entrer une adresse email valide.')
     return
   }
-  show('Merci ! Votre guide arrive dans votre boîte mail.')
-  email.value = ''
+
+  if (isSubmitting.value) return
+  isSubmitting.value = true
+
+  try {
+    const response = await fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: email.value.trim(),
+        source: 'cta',
+      }),
+    })
+
+    if (!response.ok) {
+      throw new Error('Webhook request failed')
+    }
+
+    show('Merci ! Votre guide arrive dans votre boîte mail.')
+    email.value = ''
+  } catch {
+    show('Une erreur est survenue. Réessayez dans quelques secondes.')
+  } finally {
+    isSubmitting.value = false
+  }
 }
 </script>
 
@@ -49,8 +76,8 @@ function submit() {
           v-model="email"
           @keyup.enter="submit"
         />
-        <button class="cta-submit-btn" @click="submit">
-          Recevoir le guide gratuitement →
+        <button class="cta-submit-btn" @click="submit" :disabled="isSubmitting">
+          {{ isSubmitting ? 'Envoi...' : 'Recevoir le guide gratuitement →' }}
         </button>
         <p class="cta-form-note">Aucun spam. Désinscription à tout moment.</p>
       </div>
