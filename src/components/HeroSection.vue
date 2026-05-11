@@ -2,50 +2,22 @@
 import { ref } from 'vue'
 import { useVisibility } from '../composables/useVisibility'
 import { useToast } from '../composables/useToast'
+import { useLeadForm } from '../composables/useLeadForm'
 
 const { target, isVisible } = useVisibility()
 const { show } = useToast()
+const { redirectToCta } = useLeadForm()
 
 const email = ref('')
-const isSubmitting = ref(false)
-const WEBHOOK_URL = 'https://hook.eu1.make.com/3g3jdtll0cfksujuguf3v6lxucp3lwgk'
 
-async function submit() {
-  if (!email.value.trim()) {
-    show('Veuillez entrer votre adresse email.')
-    return
-  }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+function submit() {
+  const trimmed = email.value.trim()
+  if (trimmed && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
     show('Veuillez entrer une adresse email valide.')
     return
   }
-
-  if (isSubmitting.value) return
-  isSubmitting.value = true
-
-  try {
-    const response = await fetch(WEBHOOK_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: email.value.trim(),
-        source: 'hero',
-      }),
-    })
-
-    if (!response.ok) {
-      throw new Error('Webhook request failed')
-    }
-
-    show('Merci ! Votre guide arrive dans votre boîte mail.')
-    email.value = ''
-  } catch {
-    show('Une erreur est survenue. Réessayez dans quelques secondes.')
-  } finally {
-    isSubmitting.value = false
-  }
+  redirectToCta(trimmed)
+  email.value = ''
 }
 </script>
 
@@ -82,9 +54,7 @@ async function submit() {
               v-model="email"
               @keyup.enter="submit"
             />
-            <button @click="submit" :disabled="isSubmitting">
-              {{ isSubmitting ? 'Envoi...' : 'Recevoir le guide →' }}
-            </button>
+            <button @click="submit">Recevoir le guide →</button>
           </div>
           <p class="hero-form-note">Aucun spam. Désinscription à tout moment.</p>
         </div>
