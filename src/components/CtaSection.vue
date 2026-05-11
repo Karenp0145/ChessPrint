@@ -8,7 +8,7 @@ const { show } = useToast()
 
 const email = ref('')
 const isSubmitting = ref(false)
-const WEBHOOK_URL = 'https://hook.eu1.make.com/0hj8f8em4i9qd7scyqktw5jwc0hljyat'
+const WEBHOOK_URL = 'https://hook.eu1.make.com/3g3jdtll0cfksujuguf3v6lxucp3lwgk'
 
 async function submit() {
   if (!email.value.trim()) {
