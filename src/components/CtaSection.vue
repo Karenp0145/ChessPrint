@@ -1,34 +1,32 @@
 <script setup>
-import { ref, watch, nextTick } from 'vue'
+import { ref } from 'vue'
 import { useVisibility } from '../composables/useVisibility'
-import { useToast } from '../composables/useToast'
-import { useLeadForm } from '../composables/useLeadForm'
 
 const { target, isVisible } = useVisibility()
-const { show } = useToast()
-const { pendingEmail, focusRequestId } = useLeadForm()
 
 const firstName = ref('')
 const lastName = ref('')
 const email = ref('')
 const isSubmitting = ref(false)
-const WEBHOOK_URL = 'https://hook.eu1.make.com/0hj8f8em4i9qd7scyqktw5jwc0hljyat'
+const WEBHOOK_URL = 'https://hook.eu2.make.com/16ansevgyp58oemxj4x95yo10y215sfj'
 
-async function submit() {
+async function submit(e) {
+  e.preventDefault()
+
   if (!firstName.value.trim()) {
-    show('Veuillez entrer votre prénom.')
+    alert('Veuillez entrer votre prénom.')
     return
   }
   if (!lastName.value.trim()) {
-    show('Veuillez entrer votre nom.')
+    alert('Veuillez entrer votre nom.')
     return
   }
   if (!email.value.trim()) {
-    show('Veuillez entrer votre adresse email.')
+    alert('Veuillez entrer votre adresse email.')
     return
   }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
-    show('Veuillez entrer une adresse email valide.')
+    alert('Veuillez entrer une adresse email valide.')
     return
   }
 
@@ -42,10 +40,9 @@ async function submit() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        firstName: firstName.value.trim(),
-        lastName: lastName.value.trim(),
+        prenom: firstName.value.trim(),
+        nom: lastName.value.trim(),
         email: email.value.trim(),
-        source: 'cta',
       }),
     })
 
@@ -53,12 +50,12 @@ async function submit() {
       throw new Error('Webhook request failed')
     }
 
-    show('Merci ! Votre guide arrive dans votre boîte mail.')
+    alert('Merci ! Ton guide arrive dans ta boîte mail.')
     firstName.value = ''
     lastName.value = ''
     email.value = ''
   } catch {
-    show('Une erreur est survenue. Réessayez dans quelques secondes.')
+    alert('Une erreur est survenue. Réessayez dans quelques secondes.')
   } finally {
     isSubmitting.value = false
   }
@@ -85,33 +82,31 @@ async function submit() {
           <li>20 minutes par jour, aucun prérequis</li>
         </ul>
 
-        <div class="cta-name-row">
+        <form id="chess-guide-form" @submit="submit">
+          <div class="cta-name-row">
+            <input
+              class="cta-email-input cta-name-input"
+              type="text"
+              placeholder="Prénom"
+              v-model="firstName"
+            />
+            <input
+              class="cta-email-input cta-name-input"
+              type="text"
+              placeholder="Nom"
+              v-model="lastName"
+            />
+          </div>
           <input
-            ref="firstNameInput"
-            class="cta-email-input cta-name-input"
-            type="text"
-            placeholder="Prénom"
-            v-model="firstName"
-            @keyup.enter="submit"
+            class="cta-email-input"
+            type="email"
+            placeholder="Votre addresse email"
+            v-model="email"
           />
-          <input
-            class="cta-email-input cta-name-input"
-            type="text"
-            placeholder="Nom"
-            v-model="lastName"
-            @keyup.enter="submit"
-          />
-        </div>
-        <input
-          class="cta-email-input"
-          type="email"
-          placeholder="Votre addresse email"
-          v-model="email"
-          @keyup.enter="submit"
-        />
-        <button class="cta-submit-btn" @click="submit" :disabled="isSubmitting">
-          {{ isSubmitting ? 'Envoi...' : 'Recevoir le guide gratuitement →' }}
-        </button>
+          <button class="cta-submit-btn" type="submit" :disabled="isSubmitting">
+            {{ isSubmitting ? 'Envoi...' : 'Recevoir le guide gratuitement →' }}
+          </button>
+        </form>
         <p class="cta-form-note">Aucun spam. Désinscription à tout moment.</p>
       </div>
     </div>
