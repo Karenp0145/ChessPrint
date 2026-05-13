@@ -1,16 +1,28 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, watch, nextTick } from 'vue'
 import { useVisibility } from '../composables/useVisibility'
 import { useToast } from '../composables/useToast'
+import { useLeadForm } from '../composables/useLeadForm'
 
 const { target, isVisible } = useVisibility()
 const { show } = useToast()
+const { pendingEmail, focusRequestId } = useLeadForm()
 
+const firstName = ref('')
+const lastName = ref('')
 const email = ref('')
 const isSubmitting = ref(false)
-const WEBHOOK_URL = 'https://hook.eu1.make.com/sdixoolegn3dall15tq3e4i9a376bif4'
+const WEBHOOK_URL = 'https://hook.eu1.make.com/0hj8f8em4i9qd7scyqktw5jwc0hljyat'
 
 async function submit() {
+  if (!firstName.value.trim()) {
+    show('Veuillez entrer votre prénom.')
+    return
+  }
+  if (!lastName.value.trim()) {
+    show('Veuillez entrer votre nom.')
+    return
+  }
   if (!email.value.trim()) {
     show('Veuillez entrer votre adresse email.')
     return
@@ -30,6 +42,8 @@ async function submit() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
+        firstName: firstName.value.trim(),
+        lastName: lastName.value.trim(),
         email: email.value.trim(),
         source: 'cta',
       }),
@@ -40,6 +54,8 @@ async function submit() {
     }
 
     show('Merci ! Votre guide arrive dans votre boîte mail.')
+    firstName.value = ''
+    lastName.value = ''
     email.value = ''
   } catch {
     show('Une erreur est survenue. Réessayez dans quelques secondes.')
@@ -69,6 +85,23 @@ async function submit() {
           <li>20 minutes par jour, aucun prérequis</li>
         </ul>
 
+        <div class="cta-name-row">
+          <input
+            ref="firstNameInput"
+            class="cta-email-input cta-name-input"
+            type="text"
+            placeholder="Prénom"
+            v-model="firstName"
+            @keyup.enter="submit"
+          />
+          <input
+            class="cta-email-input cta-name-input"
+            type="text"
+            placeholder="Nom"
+            v-model="lastName"
+            @keyup.enter="submit"
+          />
+        </div>
         <input
           class="cta-email-input"
           type="email"
@@ -160,6 +193,21 @@ async function submit() {
 }
 
 .cta-email-input:focus { border-color: var(--purple); }
+
+.cta-name-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 0;
+}
+
+.cta-name-input {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 480px) {
+  .cta-name-row { flex-direction: column; gap: 0; }
+}
 
 .cta-submit-btn {
   width: 100%;
