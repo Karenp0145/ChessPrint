@@ -8,7 +8,7 @@ const firstName = ref('')
 const lastName = ref('')
 const email = ref('')
 const isSubmitting = ref(false)
-const WEBHOOK_URL = 'https://hook.eu2.make.com/16ansevgyp58oemxj4x95yo10y215sfj'
+const WEBHOOK_URL = 'https://hook.eu1.make.com/ab46vrveuu2crubqjp320lyn7g7fug4f'
 
 async function submit(e) {
   e.preventDefault()
